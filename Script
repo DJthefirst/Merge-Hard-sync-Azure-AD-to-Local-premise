@@ -1,1 +1,74 @@
-Test
+Get-ADUser -Filter * -SearchBase "OU=2020,OU=Just Graduated,OU=Students,OU=User Accounts,DC=TASD,DC=NET" | Select-Object -expand SamAccountName | Tee-Object -Variable proc
+
+$i=0
+$User = "null"
+$UsersLength = $Users.length
+while($i -lt $UsersLength) {
+    $User = $Users[$i];
+
+    $UserGUID = Get-ADUser -Identity $User | Select-Object -expand ObjectGUID
+
+
+
+function isGUID ($data) {
+    try {
+        $guid = [GUID]$data
+        return 1
+    } catch {
+        #$notguid = 1
+        return 0
+    }
+}
+function isBase64 ($data) {
+    try {
+        $decodedII = [system.convert]::frombase64string($data)
+        return 1
+    } catch {
+        return 0
+    }
+}
+function displayhelp  {
+    write-host "Please Supply the value you want converted"
+    write-host "Examples:"
+    write-host "To convert a GUID to an Immutable ID: GUID2ImmutableID.ps1 '748b2d72-706b-42f8-8b25-82fd8733860f'"
+    write-host "To convert an ImmutableID to a GUID: GUID2ImmutableID.ps1 'ci2LdGtw+EKLJYL9hzOGDw=='"
+    }
+
+if ($UserGUID -eq $NULL) {
+    DisplayHelp
+    return
+}
+if (isGUID($UserGUID))
+{
+    $guid = [GUID]$UserGUID
+    $bytearray = $guid.tobytearray()
+    $immutableID = [system.convert]::ToBase64String($bytearray)
+    $immutableID
+} elseif (isBase64($UserGUID)){
+    $decodedII = [system.convert]::frombase64string($UserGUID)
+    if (isGUID($decodedII)) {
+        $decode = [GUID]$decodedii
+        $decode
+    } else {
+        Write-Host "Value provided not in GUID or ImmutableID format."
+        DisplayHelp
+    }
+} else {
+    Write-Host "Value provided not in GUID or ImmutableID format."
+    DisplayHelp
+}
+#$immutableID = "ci2LdGtw+EKLJYL9hzOGDw=="
+#$decodedII = [system.convert]::frombase64string($immutableID)
+#$decode = [GUID]$decodedii
+
+
+
+
+
+$CloudID = Get-AzureADUser -ObjectId ($User + "@tasd.net") | Select-Object -expand ObjectId
+Set-AzureADUser -UserPrincipalName ($User + "@tasd.net") -ImmutableId $immutableID
+$CloudID
+
+
+    $i++
+}
