@@ -1,4 +1,4 @@
-# Merge-Hard-sync-Azure-AD-to-Local-premise
+# Merge or Hard syncAD Local premises accounts to the Azure AD cloud 
 This is a script designed to merge or Hard sync multiple local premise accounts to the Azure AD cloud. (Might also work for 
 
 1. Open a powershell instance as an administrator on your local domain controller.
